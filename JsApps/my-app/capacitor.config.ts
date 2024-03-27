@@ -1,12 +1,10 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.tourismplus.tourismplus',
-  appName: 'tourism-plus',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  }
+  appId: 'com.example.app',
+  appName: 'my-app',
+  webDir: 'build',
+  bundledWebRuntime: false
 };
 
 export default config;
