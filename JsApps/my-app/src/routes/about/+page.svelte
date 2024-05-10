@@ -8,7 +8,6 @@
   import { onMount } from 'svelte';
   
   
-  console.log("test")
   let loc = null;
     async function getCurrentPosition(){
       const res = await Geolocation.getCurrentPosition()
@@ -55,8 +54,22 @@
       console.log(url);
     
     })
-    })})
-  
+    })
+
+  })
+
+  function display(){
+      let themsg = document.getElementById("msg").value;
+      console.log("fgrog");
+      if (themsg){
+          document.getElementById("showinputhere").innerHTML = themsg;
+          console.log("true");
+      }
+      else{
+          document.getElementById("showinputhere").innerHTML = "No message set";
+          console.log("false");
+    }
+    }
   
   
 
@@ -106,16 +119,24 @@
     <button class="rounded-sm bg-red-600 text-white px-4 py-2" on:click={stopStream}>Stop Stream</button>
 
     <video class="mt-4 rounded-sm " width="640" height="480" autoplay={true} bind:this={videoRef} />
-
-</section>
+  </section>
 
 
 
 <label for="picture">camera</label>
 <input type="file" id="picture" name="picture" accept="image/*" capture="environment" />
 
-<label for="picture">maybemaybe</label>
-<input type="file" id="picture" name="picture" accept="image/*" capture="environment" />
+<label for="picture">file</label>
+<input type="file" id="picture" name="picture" accept="image/*" />
 
+
+<h1>Input and Display Message</h1>
+
+<p>Enter a message</p>
+
+  <input type="text" id="msg" ><br>
+  <button on:click = {display}>Click me</button>
+
+<p id="showinputhere"></p>
 </body>
 

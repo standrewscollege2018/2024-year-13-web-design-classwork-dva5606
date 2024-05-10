@@ -36,23 +36,15 @@
     </application>
 
     <!-- Permissions -->
-
-    
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-<uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
-  <!-- Camera -->
-  <intent>
-      <action android:name="android.media.action.IMAGE_CAPTURE" />
-  </intent>
-  <!-- Gallery -->
-  <intent>
-      <action android:name="android.intent.action.GET_CONTENT" />
-  </intent>
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+    
 </manifest>
