@@ -3,6 +3,23 @@
 
 <script>
 
+
+
+  import OpenAI from "openai";
+
+  const openai = new OpenAI({ apiKey: '', dangerouslyAllowBrowser: true });
+const questions = new Array();
+const responses = new Array();
+var frame = 0;
+var messTextBase = "Hello Chatgpt, please respond with 2-3 sentence responses. You have been asked '";
+var messText = ""
+var url = ""  
+var img = ""
+
+
+
+
+
   // Imports a few extensions
   import Counter from "../components/counter.svelte";
   import { Button, Alert, Card, Navbar, NavBrand, NavLi, NavUl, NavHamburger, Toast } from 'flowbite-svelte';
@@ -11,6 +28,87 @@
   import { Camera, CameraResultType } from '@capacitor/camera';
   import { onMount } from 'svelte';
   
+
+
+  async function callgpt(question,base64Image) {
+  // send and wait for a response from chatgpt
+//   console.log(question)
+  const completion = await openai.chat.completions.create({
+    "model": "gpt-4-turbo",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": `${question}`,
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": `data:image/jpeg;base64,${base64Image}`
+            }
+          }
+        ]
+      }
+    ],
+    "max_tokens": 300
+
+  });
+  
+  
+  // recieve the answer from chatgpt and return it 
+  const answer = completion.choices[0].message.content;
+  console.log("\x1b[36m%s\x1b[0m"+answer)
+  responses.push(answer)
+  
+  return answer;
+}
+
+
+async function genQuesiton(question){
+    frame += 1;
+    const userQuesiton = question
+
+    questions.push(userQuesiton)
+    if (userQuesiton == "0") {
+      rl.close();
+
+    }
+    if (frame != 1){
+      messText = messTextBase;
+      for (var i=0; i < questions.length-1; i++){
+        messText = messText+questions[i] + ","
+      }
+      messText = messText + "' and have answered each with "
+      for (var j=0; j < responses.length; j++){
+        messText = messText+responses[j] 
+      }
+      messText = messText + " Please answer the current question of " +userQuesiton
+
+    }
+    else {
+      messText = userQuesiton;
+
+    }
+    console.log("\u001b[34m"+messText)
+    return messText;
+
+}
+
+async function askQuestion(question, base64String) {  
+    const altQuesiton = await genQuesiton(question)
+
+    
+    return callgpt(altQuesiton,base64String);
+   
+    
+}
+
+
+
+
+
   // sets location to null
   let loc = null;
 
@@ -59,6 +157,8 @@
   // creates onMount function to excute code after rendering the page
   onMount(() => {
 
+
+
     // creates a variable called fillInput which will store the image file
     var fileInput = document.querySelector('input[type="file"]');
 
@@ -74,25 +174,33 @@
       // When the fr variable has loaded do the following
       fr.addEventListener('load', () => {
         // Set the results to a variable and display it in console
-        var url = fr.result;
-        console.log(url);
+        
+        url = fr.result;
+        
+     
+        img = url.split(",");
+        console.log(img[1]);
     
-    })
+    })  
     })
 
   })
 
   // creates a function called display
-  function display(){
+   function  display(){
 
-    // lets themsg equal whatever HTML element has the ID "msg"
-    let themsg = document.getElementById("msg").value;
-
-    // If themsg has a value, replace whatever HTML element that has the showinputhere ID with the message
-    if (themsg){
-        document.getElementById("showinputhere").innerHTML = themsg;
+    // lets theMsg equal whatever HTML element has the ID "msg"
+    let theMsg = document.getElementById("msg").value;
+    
+    console.log(theMsg," the image is: \n" ,img[1]);
+    
+    theMsg = askQuestion(theMsg,img[1])
+    console.log (theMsg)
+    // If theMsg has a value, replace whatever HTML element that has the showinputhere ID with the message
+    if (theMsg){
+        document.getElementById("showinputhere").innerHTML = theMsg;
     }
-    // If themsg is not set, display "No message set"
+    // If theMsg is not set, display "No message set"
     else{
         document.getElementById("showinputhere").innerHTML = "No message set";
     }
@@ -175,4 +283,3 @@
 <p id="showinputhere"></p>
 
 </body>
-
