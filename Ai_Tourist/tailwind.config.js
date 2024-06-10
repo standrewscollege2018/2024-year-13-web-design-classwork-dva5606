@@ -13,7 +13,23 @@ export default {
 
   theme: {
     extend: {
-      colors: {
+      colors: {  
+          white: "#ffffff",
+          black: "#000000",
+          lightModeGrey: {
+          "100": "#f8f8f8",
+          "200": "#e6e6e6",
+          "300": "#d1d1d1",
+          "400": "#C8C8C8",
+          "500": "#818181",
+          "600": "#707070",
+          "700": "#505050",
+          "800": "#242424",
+        },
+      },
+      fontFamily: {
+        consolas: "Consolas",
+        calibri: "Calibri",
       },
     },
   },
