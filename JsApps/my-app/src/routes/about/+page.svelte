@@ -3,7 +3,13 @@
 
 <script>
 
+const now = Date.now();
 
+//console.log(`${Date.now() - now}ms`);
+
+import PocketBase from 'pocketbase';
+
+const pb = new PocketBase('https://pocketbase.io');
 
   import OpenAI from "openai";
 
@@ -15,7 +21,7 @@ var messTextBase = "Hello Chatgpt, please respond with 2-3 sentence responses. Y
 var messText = ""
 var url = ""  
 var img = ""
-
+var theOtherMsg = ""
 
 
 
@@ -155,7 +161,7 @@ async function askQuestion(question, base64String) {
   }
 
   // creates onMount function to excute code after rendering the page
-  onMount(() => {
+   onMount(() => {
 
 
 
@@ -174,12 +180,13 @@ async function askQuestion(question, base64String) {
       // When the fr variable has loaded do the following
       fr.addEventListener('load', () => {
         // Set the results to a variable and display it in console
-        
+      
         url = fr.result;
-        
+        console.log(url)
+        document.getElementById("displayImage").src = url;
      
         img = url.split(",");
-        console.log(img[1]);
+        // console.log(img[1]);
     
     })  
     })
@@ -187,24 +194,31 @@ async function askQuestion(question, base64String) {
   })
 
   // creates a function called display
-   function  display(){
-
+  async function display() {
     // lets theMsg equal whatever HTML element has the ID "msg"
     let theMsg = document.getElementById("msg").value;
-    
-    console.log(theMsg," the image is: \n" ,img[1]);
-    
-    theMsg = askQuestion(theMsg,img[1])
-    console.log (theMsg)
+
+    console.log(theMsg, " the image is: \n", img[1]);
+    console.log(`${Date.now() - now}ms`);
+
+    // Await the result of askQuestion
+    theMsg += await askQuestion(theMsg, img[1]);
+    theOtherMsg += theMsg
+    theMsg = theOtherMsg
+    console.log(`${Date.now() - now}ms`);
+    console.log(theMsg);
+   console.log(`${Date.now() - now}ms`);
+
     // If theMsg has a value, replace whatever HTML element that has the showinputhere ID with the message
-    if (theMsg){
+    if (theMsg) {
         document.getElementById("showinputhere").innerHTML = theMsg;
     }
     // If theMsg is not set, display "No message set"
-    else{
+    else {
         document.getElementById("showinputhere").innerHTML = "No message set";
     }
-  }
+}
+
 </script>
 
 <!-- Creates a svelte header -->
@@ -282,4 +296,5 @@ async function askQuestion(question, base64String) {
 <!-- Shows whatever is stored within the showinputhere var in js -->
 <p id="showinputhere"></p>
 
+<img id="displayImage" src="" alt="">
 </body>
