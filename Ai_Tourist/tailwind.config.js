@@ -12,6 +12,9 @@ export default {
   darkMode: 'class',
 
   theme: {
+    screens:{
+      
+    },
     extend: {
       colors: {  
           white: "#ffffff",
