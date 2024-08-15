@@ -10,12 +10,12 @@
 
 <!-- Creates the file insert -->
 <div class="border-0">
-  <div class="m-auto w-1/2 py-6">
+  <div class="m-auto w-1/2 py-6" id="imageContainer">
       <!-- Forms a label for the input allowing me to freely style it -->
-      <label for="image" class="flex items-center justify-center h-60 bg-white border-lightModeGrey-400 border border-2 rounded-xl"> 
+      <label for="image" class="flex items-center justify-center h-60 bg-white border-lightModeGrey-400 border border-2 rounded-xl" id="imageLabel"> 
         <input id="image" type="file" accept="image/*" class="hidden" />
         <!-- Creates a blank image where the image that is inputted will be displayed -->
-        <img class="w-auto h-auto rounded-xl " id="imageDisplay" src="" alt="">
+        <img class="max-h-[350px] object-cover rounded-xl " id="imageDisplay" src="" alt="">
         <!-- simple plus icon -->
         <img class="h-[60%] rounded-xl " id="plusIcon" src="src/lib/images/plusLight.png" alt="">
       </label>
@@ -154,7 +154,6 @@ async function genQuesiton(question: string){
  }
  console.log("\u001b[34m"+messText)
  return messText;
-
 }
 
 async function askQuestion(question: string, base64String: string) {  
@@ -179,8 +178,7 @@ send!.addEventListener('click', (display))
 // When fileInput changes do the following
 imageInput!.addEventListener('change', () => {
   
-  const plusIcon = document.getElementById("plusIcon");
-  plusIcon!.className += "absolute opacity-60 z-50 h-[7%] mb-[45%] mr-[30%]";
+
   // creates a variable call fr which stores the new fileReader function
   let fr = new FileReader();
 
@@ -197,6 +195,15 @@ imageInput!.addEventListener('change', () => {
 
     document.getElementById("imageDisplay")!.src = url;
     img = url!.split(",");
+
+    const plusIcon = document.getElementById("plusIcon");
+    
+    plusIcon!.className += "absolute opacity-60 z-1 h-[7%] mt-[10px] ml-[10px]";
+    const imageContainer = document.getElementById("imageContainer");
+    imageContainer!.className = "w-max max-w-[80%] max-h-[200px] py-8 mx-auto"
+    const imageLabel = document.getElementById("imageLabel");
+    imageLabel!.classList.remove("items-center", "justify-center", "h-60") 
+
     })  
   })
 
@@ -377,5 +384,87 @@ onMount (() => {
       }
     })
   }
-});
+  let micButton = document.getElementById("microphone");
+  micButton!.addEventListener('click', toggleMic);
+
+  function audioSetup() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({
+        audio: true
+      })
+      .then(setupStream)
+      .catch(err => {
+        console.log(err)
+      })
+    }
+  }
+
+  audioSetup();
+  let recorder = null;
+  let chunks = [];
+  let isRecording = false;
+
+  function setupStream(stream) {
+    recorder = new MediaRecorder(stream);
+
+    recorder.ondataavailable = e => {
+      chunks.push(e.data);
+    }
+
+    recorder.onstop = async () => {
+    const blob = new Blob(chunks, { type: "audio/mp3" });
+    chunks = [];
+
+    const formData = new FormData();
+    formData.append('audio', blob, 'recording.mp3');
+
+    try {
+      // Save the audio file
+      const saveResponse = await fetch('/api/saveAudio', {
+        method: 'POST',
+        body: blob
+      });
+
+      if (saveResponse.ok) {
+        console.log("Audio saved successfully");
+      } else {
+        console.error("Failed to save audio");
+        return;
+      }
+
+      // Transcribe the saved audio file
+      const transcribeResponse = await fetch('/api/speechToText', {
+        method: 'POST',
+        body: blob
+      });
+
+      if (transcribeResponse.ok) {
+        const data = await transcribeResponse.json();
+        console.log("Transcription:", data.transcription);
+        document.getElementById("textInputField")!.value += data.transcription
+      } else {
+        console.error("Failed to transcribe audio");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+
+  }
+
+  function toggleMic() {
+    if (isRecording == false) {
+      isRecording = true;
+      console.log ("Recording")
+      recorder.start();
+    }
+    else {
+      isRecording = false;
+      console.log("Stopped recording")
+      recorder.stop()
+    }
+  }
+})
+
 </script>
