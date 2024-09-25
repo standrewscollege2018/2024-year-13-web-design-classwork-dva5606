@@ -1,29 +1,41 @@
-  import { json, error } from '@sveltejs/kit';
-  import type { RequestHandler } from './$types';
-  import OpenAI from 'openai';
-  const openai = new OpenAI({apiKey: ''});
+// Imports a few modules
+import { json, error } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import OpenAI from 'openai';
 
+// Sets api key
+const openai = new OpenAI({apiKey: ''});
 
-  export const POST: RequestHandler = async ({ request }) => {
-    const { text } = await request.json();
+// Handles the incoming POST requests
+export const POST: RequestHandler = async ({ request }) => {
 
-    if (!text) {
-      throw error(400, 'Text input is required');
-    }
+  // The text is obtained from the POST request
+  const { text } = await request.json();
 
-    try {
-      const mp3 = await openai.audio.speech.create({
-        model: "tts-1",
-        voice: "alloy",
-        input: text,
-      });
+  // Validates the test to ensure it's not null
+  if (!text) {
+    throw error(400, 'Text input is required');
+  }
 
-      const buffer = Buffer.from(await mp3.arrayBuffer());
-      const audioBase64 = buffer.toString('base64');
+  try {
+    // Utilizes OpenAI tts-1 model to generate speech
+    const mp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: text,
+    });
 
-      return json({ audio: audioBase64 });
-    } catch (err) {
-      console.error('Error creating audio:', err);
-      throw error(500, 'Internal Server Error');
-    }
-  };
+    // The mp3 audio object is then converted into an arrayBuffer to a buffer object
+    const buffer = Buffer.from(await mp3.arrayBuffer());
+    // Converts to base64 to make the file easier to send back via JSON
+    const audioBase64 = buffer.toString('base64');
+
+    // Audio is returned as base64
+    return json({ audio: audioBase64 });
+  
+  // If any issues arise in the try statement, the error will be caught and a message displayed
+  } catch (err) {
+    console.error('Error creating audio:', err);
+    throw error(500, 'Internal Server Error');
+  }
+};

@@ -1,29 +1,37 @@
+// Imports a few modules for file reading and writing as well as the openai module
 import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
 
-const openai = new OpenAI();
+// Sets api key
+const openai = new OpenAI({apiKey: ''});
 
+// Function that handles incoming post requests to this server file
 export async function POST({ request }) {
   try {
-    // Save the incoming audio file temporarily
+    // Obtains audio data from the post request
     const audioBuffer = await request.arrayBuffer();
+    // Defines the file path to temporarily store the audio data
     const audioFilePath = path.join(process.cwd(), 'temp_audio.mp3');
+    // Converts the audio buffer to a node.js buffer and saves it to the audioFilePath directory
     await fs.promises.writeFile(audioFilePath, Buffer.from(audioBuffer));
 
-    // Use the Whisper API for transcription
+    // Utilizes the OpenAI transcription whisper model
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(audioFilePath),
       model: 'whisper-1',
     });
 
-    // Delete the temporary file after transcription
+    // Deletes the temporary audio file
     await fs.promises.unlink(audioFilePath);
 
+    // The resulting transcription is then returned as a JSON response
     return new Response(JSON.stringify({ transcription: transcription.text }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
+  
+  // If anything fails, the error will be caught and a message displayed as to what happened
   } catch (error) {
     console.error('Error transcribing audio:', error);
     return new Response(JSON.stringify({ message: 'Failed to transcribe audio.' }), {
