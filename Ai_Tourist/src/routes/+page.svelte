@@ -98,6 +98,7 @@ import OpenAI from "openai";
 import { Toast } from 'flowbite-svelte';
 import { ExclamationCircleSolid } from 'flowbite-svelte-icons';
 import { fly } from 'svelte/transition';
+	import type { Audio } from 'openai/resources/index.mjs';
 
 
 // Sets up a few variables and the OpenAI API key
@@ -329,8 +330,24 @@ onMount(() => {
   }
 })
 
+let audioObject: HTMLAudioElement | null = null;
+let controller: AbortController | null = null;
+
 async function audio(text: String) {
   try {
+
+    if (controller) {
+      controller.abort(); // Cancel the previous request
+    }
+
+    controller = new AbortController();
+
+    if (audioObject) {
+      audioObject.pause();
+      audioObject.currentTime = 0; // Reset the position
+    }
+
+
     // Send a POST request to the '/api/textToSpeech' endpoint with the provided text
     const response = await fetch('/api/textToSpeech', {
       method: 'POST',
@@ -338,7 +355,8 @@ async function audio(text: String) {
         'Content-Type': 'application/json'
       },
       // Sends text as JSON
-      body: JSON.stringify({ text }) 
+      body: JSON.stringify({ text }),
+      signal: controller.signal,
     });
     
     // If the audio is not returned appropriately, the error will be caught and displayed
@@ -351,12 +369,21 @@ async function audio(text: String) {
     const { audio } = await response.json();
     const audioUrl = `data:audio/mpeg;base64,${audio}`;
     
-    // Creates new audio object with the audio data URL and plays it
-    const audioObject = new window.Audio(audioUrl); 
+    // Creates new audio object with the audio data URL
+    audioObject = new window.Audio(audioUrl); 
+
+    audioObject.onended = () => {
+      audioObject = null; // Allow new requests once the current speech finishes
+    };
+
     audioObject.play();
     // Catches any unexpected errors that may occur during this process
   } catch (error) {
-    console.error('Error creating audio:', error);
+    if (error.name === 'AbortError') {
+      console.log('Previous transcription request aborted.');
+    } else {
+      console.error('Error playing audio:', error);
+    }
   }
 }
 
