@@ -7,7 +7,7 @@
   <div id="notificationsContainer" class="fixed z-50 left-[5%] top-[3%]">
 
     {#each notifications as notification (notification.id)}
-    <Toast color="red" class="relative m-[5px]">
+    <Toast transition={fly} params={{x:-200}} color="red" class="relative m-[5px]">
       <!-- Slot for the error icon -->
       <svelte:fragment slot="icon">
         <ExclamationCircleSolid class="w-5 h-5 red" />
@@ -97,6 +97,7 @@ import SettingsLightInactive from "../components/settingsLightInactive.svelte";
 import OpenAI from "openai";
 import { Toast } from 'flowbite-svelte';
 import { ExclamationCircleSolid } from 'flowbite-svelte-icons';
+import { fly } from 'svelte/transition';
 
 
 // Sets up a few variables and the OpenAI API key
@@ -372,7 +373,7 @@ let elementAppended = false as boolean
  let notifications = [];
 
 // Function to trigger a new toast notification
-function triggerToast(message) {
+async function triggerToast(message) {
   const id = Date.now(); // Unique ID for each toast
 
   // Add new notification to the array
@@ -386,30 +387,36 @@ function triggerToast(message) {
 
 // Creates a display function that will run when the send button is clicked
 async function display(){
-
-
-  triggerToast("Error occurred! Please try again.")
-
-  // body!.append("<Toast> <FireOutline slot='icon' class='w-6 h-6 text-primary-500 bg-primary-100 dark:bg-primary-800 dark:text-primary-200' /> Set yourself free. </Toast>")
-  elementAppended = true
   // Gets the text that was inserted and the HTML chatsContainer and sets them to variables for later use
   userText = (<HTMLInputElement>document.getElementById("textInputField")!).value;
-  let chatsContainer = document.getElementById("chatsContainer");
-  // Causes the chatsContainer to now be visible
-  chatsContainer!.classList.replace("invisible", "visible");
-  // Runs function that in this case will insert the user's message
-  await insertHTML()
-  
-  // Returns the text from the AI
-  printText = await askQuestion(userText, img[1]) as string;
-  
-  // If its set, inserts the AI's response
-  if (printText){
-      await insertHTML()
-      // Increments the messageNumber to keep HTML id's unique
-      messageNumber = increment(messageNumber, "+");
+  if (img[1] && userText) {
+    // body!.append("<Toast> <FireOutline slot='icon' class='w-6 h-6 text-primary-500 bg-primary-100 dark:bg-primary-800 dark:text-primary-200' /> Set yourself free. </Toast>")
+    elementAppended = true
+    let chatsContainer = document.getElementById("chatsContainer");
+    // Causes the chatsContainer to now be visible
+    chatsContainer!.classList.replace("invisible", "visible");
+    // Runs function that in this case will insert the user's message
+    await insertHTML()
+    
+    // Returns the text from the AI
+    printText = await askQuestion(userText, img[1]) as string;
+    
+    // If its set, inserts the AI's response
+    if (printText){
+        await insertHTML()
+        // Increments the messageNumber to keep HTML id's unique
+        messageNumber = increment(messageNumber, "+");
 
     }
+  }
+  else {
+    if (!img[1]) {
+      await triggerToast("Error occurred! Please insert an image.")
+    }
+    if (!userText) {
+      await triggerToast("Error occurred! Please ask a question.")
+    }
+  }
 }
 
 async function insertHTML (){
