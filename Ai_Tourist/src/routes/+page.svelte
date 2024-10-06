@@ -26,7 +26,7 @@
   <div class="border-0">
     <div class="m-auto w-1/2 py-6" id="imageContainer">
         <!-- Forms a label for the input allowing me to freely style it -->
-        <label for="image" class="flex items-center justify-center h-60 bg-white border-lightModeGrey-400 border border-2 rounded-xl" id="imageLabel"> 
+        <label for="image" class="flex items-center justify-center bg-white h-60 border-lightModeGrey-400 border border-2 rounded-xl" id="imageLabel"> 
           <input id="image" type="file" accept="image/*" class="hidden" />
           <!-- Creates a blank image where the image that is inputted will be displayed -->
           <img class="max-h-[350px] object-cover rounded-xl" id="imageDisplay" src="" alt="">
@@ -48,8 +48,8 @@
     <!-- seperate container specifically for the text input bar and its components -->
     <div class="flex mx-[20px] border-black border-2 bg-white rounded-xl bottom-[17%] justify-centre">
       <!-- Forms a small button with a microphone as its icon -->
-      <button class="w-[10%]" id="microphone">
-        <img class="h-auto p-1" src="src/lib/images/microphoneLight.png" alt="">
+      <button class="w-[10%]">
+        <img id="microphone" class="h-auto p-[5px] transition-opacity transition-transform duration-200 ease-in-out transform" src="src/lib/images/microphoneLight.png" alt="Voice to Text">
       </button>
 
       <!-- small vertical line to act as a divider -->
@@ -59,8 +59,8 @@
       <input type="text" id="textInputField" placeholder="Ask ChatGPT..." class="ml-[5px] focus:outline-none grow">
       
       <!-- a button that confirms the text within the field and sends it off to the AI -->
-      <div id="send" class="w-[10%]">
-        <img class="h-auto p-1" src="src/lib/images/sendLight.png" alt="">
+      <div id="send" class="transition-[opacity] duration-[500ms] opacity-30 w-[10%]">
+        <img class=" h-auto p-1" src="src/lib/images/sendLight.png" alt="">
       </div>
     <!-- Closes the div tag for specifically just the text input field -->
     </div>
@@ -98,7 +98,6 @@ import OpenAI from "openai";
 import { Toast } from 'flowbite-svelte';
 import { ExclamationCircleSolid } from 'flowbite-svelte-icons';
 import { fly } from 'svelte/transition';
-	import type { Audio } from 'openai/resources/index.mjs';
 
 
 // Sets up a few variables and the OpenAI API key
@@ -183,15 +182,28 @@ async function askQuestion(question: string, base64String: string) {
  return callgpt(altQuesiton,base64String);
 }
 
+function sendActive() {
+  let send = document.getElementById("send") as HTMLButtonElement
+  send.classList.remove ("opacity-30")
+  send!.addEventListener('click', (display))
+  send!.removeEventListener('click', checkErrors)
+}
 
-
+function sendInactive() {
+  let send = document.getElementById("send") as HTMLButtonElement
+  send.classList.add ("opacity-30")
+  send!.removeEventListener('click', (display))
+  send!.addEventListener('click', checkErrors)
+}
 
 // creates onMount function to excute code after rendering the page
 onMount(() => {
   // creates a variable called fillInput which will store the image file
   let imageInput = document.querySelector('input[type="file"]') as HTMLInputElement;
   let send = document.getElementById("send") as HTMLButtonElement
-  send!.addEventListener('click', (display))
+
+  send.addEventListener('click', checkErrors)
+  
 
   // When fileInput changes do the following
   imageInput!.addEventListener('change', () => {
@@ -220,34 +232,48 @@ onMount(() => {
         imageContainer!.className = "w-max max-w-[80%] py-8 mx-auto"
         const imageLabel = document.getElementById("imageLabel");
         imageLabel!.classList.remove("items-center", "justify-center", "h-60") 
+        checkInputs()
       }
     })  
   })
 
-    // The speaker icon can only exist if an element was appended
-    if (elementAppended = true) {
-      // Makes use of event delegation to check if the chatsContainer element was clicked and which specific speaker was clicked
-      document.getElementById('chatsContainer')!.addEventListener('click', function(event) {
-        // Sets speaker to event target which is essentially what was clicked or where the click occured
-        let speaker = event.target as HTMLButtonElement;
+  // The speaker icon can only exist if an element was appended
+  if (elementAppended = true) {
+    // Makes use of event delegation to check if the chatsContainer element was clicked and which specific speaker was clicked
+    document.getElementById('chatsContainer')!.addEventListener('click', function(event) {
+      // Sets speaker to event target which is essentially what was clicked or where the click occured
+      let speaker = event.target as HTMLButtonElement;
 
-        // If what was clicked had an id that started with "speaker-"...
-        if (speaker.id.startsWith('speaker-')) {
-          // Obtains the id of the message whether that be from the user or the AI via the extra data attribute
-          let responseID = speaker!.getAttribute('data-speakerID');
-          // The message id is used to obtain the message content repective to the speaker id clicked
-          let response = document.getElementById("response-" + responseID)!.textContent;
-          console.log(response)
-          // This is then passed into the audio function to convert text to voice
-          if (response != null) {
-            audio(response)
-          }
+      // If what was clicked had an id that started with "speaker-"...
+      if (speaker.id.startsWith('speaker-')) {
+        // Obtains the id of the message whether that be from the user or the AI via the extra data attribute
+        let responseID = speaker!.getAttribute('data-speakerID');
+        // The message id is used to obtain the message content repective to the speaker id clicked
+        let response = document.getElementById("response-" + responseID)!.textContent;
+        console.log(response)
+        // This is then passed into the audio function to convert text to voice
+        if (response != null) {
+          audio(response)
         }
-      } 
-    )
+      }
+    })
   }
 
-  let micButton = document.getElementById("microphone");
+  let textInputField = document.getElementById("textInputField") as HTMLInputElement
+
+  function checkInputs() {
+    if (img[1] && textInputField && textInputField.value) {
+      sendActive()
+    }
+
+    else {
+      sendInactive()
+    }
+  }
+
+  textInputField.addEventListener('input', checkInputs)
+
+  let micButton = document.getElementById("microphone") as HTMLImageElement;
   micButton!.addEventListener('click', toggleMic);
 
   function audioSetup() {
@@ -305,7 +331,12 @@ onMount(() => {
         const data = await transcribeResponse.json();
         console.log("Transcription:", data.transcription);
         (<HTMLInputElement>document.getElementById("textInputField")!).value += data.transcription
-      } else {
+        if (data.transcription && img[1]) {
+          sendActive()
+        }
+        else {
+          sendInactive()
+        }
         console.error("Failed to transcribe audio");
       }
     } catch (error) {
@@ -320,15 +351,26 @@ onMount(() => {
         isRecording = true;
         console.log ("Recording")
         recorder.start();
+        micButton!.src = "src/lib/images/stopLight.png"
+        micButton.classList.replace("p-[5px]", "p-[7px]")
       }
       else {
         isRecording = false;
         console.log("Stopped recording")
         recorder.stop()
+        micButton!.src = "src/lib/images/microphoneLight.png"
+        micButton.classList.replace("p-[74px]", "p-[5px]")
       }
+      micButton.classList.add('scale-110', 'opacity-80');  
+
+      setTimeout(() => {
+        micButton.classList.remove('scale-110', 'opacity-80');
+      }, 200);
     }
   }
 })
+
+
 
 let audioObject: HTMLAudioElement | null = null;
 let controller: AbortController | null = null;
@@ -387,6 +429,19 @@ async function audio(text: String) {
   }
 }
 
+async function checkErrors() {
+  let textInputField = document.getElementById("textInputField") as HTMLInputElement
+    if (!img[1]) {
+      await triggerToast("Error occurred! Please insert an image.")
+    }
+    if (!textInputField.value) {
+      await triggerToast("Error occurred! Please ask a question.")
+    }
+    if (displaying == true) {
+      await triggerToast("Error occured! Please await a reply before asking again.")
+    }
+  }
+
 // Sets up a couple variables in order to dynamically add content
 let iconChatGPTOrUser = "0" as string
 let nameChatGPTOrUser = "2" as string
@@ -412,11 +467,16 @@ async function triggerToast(message) {
   }, 3000); // Toast will disappear after 3 seconds
 }
 
+let displaying = false as boolean
+
 // Creates a display function that will run when the send button is clicked
 async function display(){
+  sendInactive()
   // Gets the text that was inserted and the HTML chatsContainer and sets them to variables for later use
-  userText = (<HTMLInputElement>document.getElementById("textInputField")!).value;
+  let textInputField = (<HTMLInputElement>document.getElementById("textInputField")!)
+  userText = textInputField.value;
   if (img[1] && userText) {
+    
     // body!.append("<Toast> <FireOutline slot='icon' class='w-6 h-6 text-primary-500 bg-primary-100 dark:bg-primary-800 dark:text-primary-200' /> Set yourself free. </Toast>")
     elementAppended = true
     let chatsContainer = document.getElementById("chatsContainer");
@@ -424,26 +484,20 @@ async function display(){
     chatsContainer!.classList.replace("invisible", "visible");
     // Runs function that in this case will insert the user's message
     await insertHTML()
+
+    await insertHTML()
     
     // Returns the text from the AI
     printText = await askQuestion(userText, img[1]) as string;
     
-    // If its set, inserts the AI's response
     if (printText){
-        await insertHTML()
-        // Increments the messageNumber to keep HTML id's unique
-        messageNumber = increment(messageNumber, "+");
-
+      document.getElementById("response-" + "5" + messageNumber)!.innerHTML = printText;
+      // Increments the messageNumber to keep HTML id's unique
+      messageNumber = increment(messageNumber, "+");
+      textInputField.value = "";
     }
   }
-  else {
-    if (!img[1]) {
-      await triggerToast("Error occurred! Please insert an image.")
-    }
-    if (!userText) {
-      await triggerToast("Error occurred! Please ask a question.")
-    }
-  }
+  displaying = false
 }
 
 async function insertHTML (){
@@ -456,7 +510,6 @@ async function insertHTML (){
   message is from the user or the AI. Element id's will consist of what the element represents followed by a 0 or 1
   depending on whether the current message is from the user or the AI and then further followed by the current message
   number*/
-
   // Creates the div content for the entire message
   '<div class="flex flex-row">' +
       // Creates the div container for the icon
@@ -486,8 +539,8 @@ async function insertHTML (){
 // Generates the message contents with a dynamic id of "response-" followed by responseChatGPTOrUser and messageNumber
   '<p id="response-' +
   responseChatGPTOrUser + messageNumber +
-  '" class="ml-[16%] pb-[20px]"></p>';  
-  
+  '" class="ml-[16%] pb-[20px]"></p>'
+
   // Checks to see if the current message displayed should be from the user
   if (iconChatGPTOrUser == "0" && nameChatGPTOrUser == "2" && responseChatGPTOrUser == "4") {
     // Uses the dynamic id's to insert the user icon, the user name, and the users message into their respective places
@@ -507,7 +560,12 @@ async function insertHTML (){
     // Uses the dynamic id's to insert the AI's icon, the AI name, and the AI's message into their respective places
     (<HTMLImageElement>document.getElementById("icon-" + iconChatGPTOrUser + messageNumber)).src = "src/lib/images/openaiLight.png";
     document.getElementById("name-" + nameChatGPTOrUser + messageNumber)!.innerHTML="ChatGPT";
-    document.getElementById("response-" + responseChatGPTOrUser + messageNumber)!.innerHTML = printText;
+    document.getElementById("response-" + responseChatGPTOrUser + messageNumber)!.innerHTML = "<div class='flex space-x-2'>" +
+                                                                                              "<span class='sr-only'>Loading...</span>" +
+                                                                                              "<div class='h-4 w-4 bg-black rounded-full animate-bounce [animation-delay:-0.3s]'></div>" +
+                                                                                              "<div class='h-4 w-4 bg-black rounded-full animate-bounce [animation-delay:-0.15s]'></div>" +
+                                                                                              "<div class='h-4 w-4 bg-black rounded-full animate-bounce'></div>" +
+                                                                                              "</div>"
     // Increments these variables down to 0 to ensure the next message displayed is the users
     iconChatGPTOrUser = increment (iconChatGPTOrUser, "-");
     nameChatGPTOrUser = increment (nameChatGPTOrUser, "-");
@@ -519,6 +577,7 @@ async function insertHTML (){
   else {
     console.log("An error has occured while incrementing")
   }
+
 }
 
 // Simple increment function that take in what's being incremented and whether it is being incremented up or down
