@@ -6,20 +6,24 @@
 <div id="body">
   <div id="notificationsContainer" class="fixed z-50 left-[5%] top-[3%]">
 
+    <!-- Loops through each notification in the notification array -->
     {#each notifications as notification (notification.id)}
-    <Toast transition={fly} params={{x:-200}} color="red" class="relative m-[5px]">
-      <!-- Slot for the error icon -->
-      <svelte:fragment slot="icon">
-        <ExclamationCircleSolid class="w-5 h-5 red" />
-        <span class="sr-only">Error icon</span>
-      </svelte:fragment>
-      {notification.message}
-    </Toast>
-  {/each}
+      <!-- Actual notification component -->
+      <Toast transition={fly} params={{x:-200}} color="red" class="relative m-[5px]">
+        <!-- Slot for the error icon -->
+        <svelte:fragment slot="icon">
+          <ExclamationCircleSolid class="w-5 h-5 red" />
+          <span class="sr-only">Error icon</span>
+        </svelte:fragment>
+        <!-- Message from the notification array -->
+        {notification.message}
+      </Toast>
+    {/each}
+
   </div>
   <!-- Creates a header for the app that simply displays "Chats" -->
-  <div class="sticky z-20 top-0 border-b border-b-2 border-lightModeGrey-600 bg-lightModeGrey-100">
-    <h1 class="text-2xl text-black font-consolas text-center my-[15px]">Chats</h1>
+  <div class="sticky z-20 top-0 border-b border-b-2 border-lightModeGrey-600 bg-lightModeGrey-100 py-4">
+    <h1 class="text-2xl text-black font-consolas text-center my-auto">Chats</h1>
   </div>
 
   <!-- Creates the file insert -->
@@ -94,104 +98,64 @@
 import { onMount } from 'svelte';
 import HistoryLightInactive from "../components/historyLightInactive.svelte";
 import SettingsLightInactive from "../components/settingsLightInactive.svelte";
-import OpenAI from "openai";
 import { Toast } from 'flowbite-svelte';
 import { ExclamationCircleSolid } from 'flowbite-svelte-icons';
 import { fly } from 'svelte/transition';
 
 
+
 // Sets up a few variables and the OpenAI API key
-const openai = new OpenAI({ apiKey: '', dangerouslyAllowBrowser: true });
-const questions = new Array();
-const responses = new Array();
-let frame = 0;
-let messTextBase = "Hello Chatgpt, please respond with 2-3 sentence responses. You have been asked '";
-let messText = ""
 let img = [""]
 let printText = ""
 let userText = ""
-let counter = 0;
 
+// Function to get a response from the chatgptResponseResponse server file using the question and the image
+async function getResponse(userText:string, base64Image:string) {
+  try {
+    // Sends a request to the chatgptResponse server file
+    const response = await fetch('/api/chatgptResponse', {
+      // Sets up the different components of the request
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        question: userText,
+        base64Image: base64Image,
+      }),
+    });
 
-async function callgpt(question: string,base64Image: string) {
-// send and wait for a response from chatgpt
-//   console.log(question)
-const completion = await openai.chat.completions.create({
- "model": "gpt-4-turbo",
- "messages": [
-   {
-     "role": "user",
-     "content": [
-       {
-         "type": "text",
-         "text": `${question}`,
-       },
-       {
-         "type": "image_url",
-         "image_url": {
-           "url": `data:image/jpeg;base64,${base64Image}`
-         }
-       }
-     ]
-   }
- ],
- "max_tokens": 300
+    // Check if the reponse was unsuccessful and prints the resulting error message
+    if (!response.ok) {
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
 
-});
-
-
-// recieve the answer from chatgpt and return it
-const answer = completion.choices[0].message.content;
-console.log("\x1b[36m%s\x1b[0m"+answer)
-responses.push(answer)
-
-return answer;
+    // Parses the JSON data from the response to the data variable
+    const data = await response.json();
+    // Returns the answer from data which is the response from ChatGPT
+    return data.answer;
+  }
+  // Catches errors that may occuring while processing a question
+  catch (error) {
+    // Errors are logged and a message will be printed where ChatGPT usually replies
+    console.error('Error fetching response:', error);
+    return "An error has occurred!"; // Or handle the error as you see fit
+  }
 }
-
-
-async function genQuesiton(question: string){
- frame += 1;
- const userQuesiton = question
-
- questions.push(userQuesiton)
-
- if (frame != 1){
-   messText = messTextBase;
-   for (var i=0; i < questions.length-1; i++){
-     messText = messText+questions[i] + ","
-   }
-   messText = messText + "' and have answered each with "
-   for (var j=0; j < responses.length; j++){
-     messText = messText+responses[j]
-   }
-   messText = messText + " Please answer the current question of " +userQuesiton
-
- }
- else {
-   messText = userQuesiton;
-
- }
- console.log("\u001b[34m"+messText)
- return messText;
-}
-
-async function askQuestion(question: string, base64String: string) {  
- const altQuesiton = await genQuesiton(question)
-
-
- return callgpt(altQuesiton,base64String);
-}
-
+// Function that is called when a question can be asked
 function sendActive() {
   let send = document.getElementById("send") as HTMLButtonElement
   send.classList.remove ("opacity-30")
+  // When the send button is clicked on, display() will be called rather than checkErrors()
   send!.addEventListener('click', (display))
   send!.removeEventListener('click', checkErrors)
 }
 
+// Function that is called when a question cannot be asked
 function sendInactive() {
   let send = document.getElementById("send") as HTMLButtonElement
   send.classList.add ("opacity-30")
+  // When the send button is clicked on, checkErrors() will be called rather than display()
   send!.removeEventListener('click', (display))
   send!.addEventListener('click', checkErrors)
 }
@@ -218,20 +182,23 @@ onMount(() => {
     // When the fr variable has loaded do the following
     fr.addEventListener('load', () => {
 
-      // Set the results to a variable and display it in console
+      // Set the results to a variable and preforma null check
       let url = fr.result as string;
       if (url != null) {
-        console.log(url);
+        // Replaces empty src img tag with the image that was inserted into the program
         let imageDisplay = document.getElementById("imageDisplay") as HTMLImageElement
         imageDisplay.src = url;
+        // Obtains raw URL
         img = url.split(",");
 
+        // Changes the look of the image insert by adjusting the styles through classes
         const plusIcon = document.getElementById("plusIcon");
         plusIcon!.className += "absolute opacity-60 z-10 h-[7%] mt-[10px] ml-[10px]";
         const imageContainer = document.getElementById("imageContainer");
         imageContainer!.className = "w-max max-w-[80%] py-8 mx-auto"
         const imageLabel = document.getElementById("imageLabel");
-        imageLabel!.classList.remove("items-center", "justify-center", "h-60") 
+        imageLabel!.classList.remove("items-center", "justify-center", "h-60")
+        // Inputs will be checked to see if a question can be asked 
         checkInputs()
       }
     })  
@@ -246,6 +213,12 @@ onMount(() => {
 
       // If what was clicked had an id that started with "speaker-"...
       if (speaker.id.startsWith('speaker-')) {
+        let speakerid = speaker.id
+        let speakerButton = document.getElementById(speakerid)
+        speakerButton!.classList.add('scale-110', 'opacity-70');  
+        setTimeout(() => {
+          speakerButton!.classList.remove('scale-110', 'opacity-70');
+        }, 300);
         // Obtains the id of the message whether that be from the user or the AI via the extra data attribute
         let responseID = speaker!.getAttribute('data-speakerID');
         // The message id is used to obtain the message content repective to the speaker id clicked
@@ -259,110 +232,134 @@ onMount(() => {
     })
   }
 
+  // Whenever anything is inputted (typed) into the text field, the program will check if a question can be asked
   let textInputField = document.getElementById("textInputField") as HTMLInputElement
+  textInputField.addEventListener('input', checkInputs)
 
+  // Checks for an image AND a truthy value in the text field
   function checkInputs() {
+    // If both are present, the send button becomes active
     if (img[1] && textInputField && textInputField.value) {
       sendActive()
     }
 
+    // If neither or one is missing, the send button will remain/become inactive
     else {
       sendInactive()
     }
   }
 
-  textInputField.addEventListener('input', checkInputs)
-
+  
+  // Sets up the microphone button to run toggleMic() when clicked on
   let micButton = document.getElementById("microphone") as HTMLImageElement;
   micButton!.addEventListener('click', toggleMic);
 
-  function audioSetup() {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({
-        audio: true
-      })
-      .then(setupStream)
-      .catch(err => {
-        console.log(err)
-      })
-    }
+  // Check if the browser supports media devices and audio input
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // Requests specifically audio permissions from the user
+    navigator.mediaDevices.getUserMedia({
+      audio: true
+    })
+    // The stream will then be setup if the promise is fullfilled (permission granted)
+    .then(setupStream)
+    // If an error occurs, likely from denying permissions, the error will be caught
+    .catch(err => {
+      console.log(err)
+    })
   }
 
-  audioSetup();
+  // initializes a few variables
   let recorder: MediaRecorder | null = null;
   let chunks:Blob[] = [];
   let isRecording = false;
 
+  // This function sets up the audio stream when microphone permissions have been granted
   function setupStream(stream: MediaStream) {
+    // Creates a new MediaRecorder instance with the audio stream
     recorder = new MediaRecorder(stream);
 
-    recorder.ondataavailable = e => {
-      chunks.push(e.data);
+    // Triggered whenever new data is available through the audio stream
+    recorder.ondataavailable = audio => {
+      // Small 'chunks' of audio are then added to the chunks array
+      chunks.push(audio.data);
     }
 
+    // triggered when the recorder stops (microphone button is clicked again)
     recorder.onstop = async () => {
-    const blob = new Blob(chunks, { type: "audio/mp3" });
-    chunks = [];
+      // Combines all the individual chunks from the array into one blob that represents the whole audio file
+      const blob = new Blob(chunks, { type: "audio/mp3" });
+      // Resets the chunks array
+      chunks = [];
 
-    const formData = new FormData();
-    formData.append('audio', blob, 'recording.mp3');
+      // Creates a new instance of FormData
+      const formData = new FormData();
+      // appends the name, value and file of the new FormData instance
+      formData.append('audio', blob, 'recording.mp3');
 
-    try {
-      // Save the audio file
-      const saveResponse = await fetch('/api/saveAudio', {
-        method: 'POST',
-        body: blob
-      });
-
-      if (saveResponse.ok) {
-        console.log("Audio saved successfully");
-      } else {
-        console.error("Failed to save audio");
-        return;
-      }
-
-      // Transcribe the saved audio file
-      const transcribeResponse = await fetch('/api/speechToText', {
-        method: 'POST',
-        body: blob
-      });
-
-      if (transcribeResponse.ok) {
-        const data = await transcribeResponse.json();
-        console.log("Transcription:", data.transcription);
-        (<HTMLInputElement>document.getElementById("textInputField")!).value += data.transcription
-        if (data.transcription && img[1]) {
-          sendActive()
+      // Trys to do the following and will catch any errors that occur here
+      try {
+        // The blob is then sent to a server files where an mp3 audio file is returned
+        const saveResponse = await fetch('/api/saveAudio', {
+          method: 'POST',
+          body: blob
+        });
+        
+        // Checks if the audio file response was successful or not
+        if (saveResponse.ok) {
+          console.log("Audio saved successfully");
+        } else {
+          console.error("Failed to save audio");
+          return;
         }
-        else {
-          sendInactive()
+
+        // The audio file is then sent to a server file to be transcripted
+        const transcribeResponse = await fetch('/api/speechToText', {
+          method: 'POST',
+          body: blob
+        });
+
+        // If the response comes back successful...
+        if (transcribeResponse.ok) {
+          // Sets the json response
+          const data = await transcribeResponse.json();
+          // Appends the transcription to text input field
+          (<HTMLInputElement>document.getElementById("textInputField")!).value += data.transcription
+          // Manually checks to see if a question can be asked as appending does not trigger the input event listener
+          checkInputs()
         }
-        console.error("Failed to transcribe audio");
       }
-    } catch (error) {
-      console.error("Error:", error);
+      // Catches any errors that may arise while transcripting audio to text 
+      catch (error) {
+        console.error("Error:", error);
+      }
     }
-  };
-
   }
+
+  // Function that will toggle the microphone button between it's active and inactive states
   function toggleMic() {
+    // null checks
     if (recorder != null) {
+      // if not recording, start recording both mechanically and visually
       if (isRecording == false) {
+        // recording starts and isRecording becomes true
         isRecording = true;
-        console.log ("Recording")
         recorder.start();
+        // microphone button becomes square stop button
         micButton!.src = "src/lib/images/stopLight.png"
         micButton.classList.replace("p-[5px]", "p-[7px]")
       }
+      // if recording, stop recording both mechanically and visually
       else {
+        // recording stops and isRecording becomes false
         isRecording = false;
-        console.log("Stopped recording")
         recorder.stop()
+        // the square button turns back into the originally microphone button
         micButton!.src = "src/lib/images/microphoneLight.png"
-        micButton.classList.replace("p-[74px]", "p-[5px]")
+        micButton.classList.replace("p-[7px]", "p-[5px]")
       }
-      micButton.classList.add('scale-110', 'opacity-80');  
 
+      // Small animation to visually show the button was clicked on
+      micButton.classList.add('scale-110', 'opacity-80');  
       setTimeout(() => {
         micButton.classList.remove('scale-110', 'opacity-80');
       }, 200);
@@ -371,22 +368,24 @@ onMount(() => {
 })
 
 
-
+// Initializes variables
 let audioObject: HTMLAudioElement | null = null;
 let controller: AbortController | null = null;
 
 async function audio(text: String) {
   try {
-
+    // If a controller already exists, call the abort 
     if (controller) {
-      controller.abort(); // Cancel the previous request
+      controller.abort();
     }
 
+    // Creates a new abort controller
     controller = new AbortController();
 
+    // If an audioObject is present, an mp3 file is playing so pause and reset the time
     if (audioObject) {
       audioObject.pause();
-      audioObject.currentTime = 0; // Reset the position
+      audioObject.currentTime = 0; 
     }
 
 
@@ -398,6 +397,7 @@ async function audio(text: String) {
       },
       // Sends text as JSON
       body: JSON.stringify({ text }),
+      // Attached a controller.signal to halt the request when abort is called
       signal: controller.signal,
     });
     
@@ -414,29 +414,42 @@ async function audio(text: String) {
     // Creates new audio object with the audio data URL
     audioObject = new window.Audio(audioUrl); 
 
+    // When the audio object finishes playing, reset it
     audioObject.onended = () => {
       audioObject = null; // Allow new requests once the current speech finishes
     };
 
+    // audioObject plays the audio in the window
     audioObject.play();
+
     // Catches any unexpected errors that may occur during this process
   } catch (error) {
-    if (error.name === 'AbortError') {
-      console.log('Previous transcription request aborted.');
-    } else {
-      console.error('Error playing audio:', error);
+    // Additional type-check before I can operate on the value
+    if (error instanceof Error) {
+      // If specifically an abort was called, inform that it was an abortion request
+      if (error.name === 'AbortError') {
+        console.log('Previous transcription request aborted.');
+      } 
+      // Else just print out whatever the cause for the error wasS
+      else {
+        console.error('Error playing audio:', error);
+      }
     }
   }
 }
 
+// When a message can't be sent, it may be for a number of reasons
 async function checkErrors() {
   let textInputField = document.getElementById("textInputField") as HTMLInputElement
+    // If no image is inserted, create a specific error notification
     if (!img[1]) {
       await triggerToast("Error occurred! Please insert an image.")
     }
+    // If no text has been inserted into the field, create a specific error notification
     if (!textInputField.value) {
       await triggerToast("Error occurred! Please ask a question.")
     }
+    // If a question is already being asked/processed, create a specific error notification
     if (displaying == true) {
       await triggerToast("Error occured! Please await a reply before asking again.")
     }
@@ -450,12 +463,17 @@ let speakerChatGPTOrUser = "6" as string
 let messageNumber = "0" as string
 let elementAppended = false as boolean
 
+// Defines the type and structure of notification objects
+type Notification = {
+  id: number;
+  message: string;  // Example types
+};
 
- // Array to hold each toast notification
- let notifications = [];
+//  Creates a notifications array with the notification type
+ let notifications:Notification[] = [];
 
 // Function to trigger a new toast notification
-async function triggerToast(message) {
+async function triggerToast(message:string) {
   const id = Date.now(); // Unique ID for each toast
 
   // Add new notification to the array
@@ -467,42 +485,45 @@ async function triggerToast(message) {
   }, 3000); // Toast will disappear after 3 seconds
 }
 
+// The app is not initially displaying anything
 let displaying = false as boolean
-
 // Creates a display function that will run when the send button is clicked
 async function display(){
+  // Once a question is successfully asked, the send button becomes inactive
   sendInactive()
   // Gets the text that was inserted and the HTML chatsContainer and sets them to variables for later use
   let textInputField = (<HTMLInputElement>document.getElementById("textInputField")!)
   userText = textInputField.value;
-  if (img[1] && userText) {
-    
-    // body!.append("<Toast> <FireOutline slot='icon' class='w-6 h-6 text-primary-500 bg-primary-100 dark:bg-primary-800 dark:text-primary-200' /> Set yourself free. </Toast>")
-    elementAppended = true
-    let chatsContainer = document.getElementById("chatsContainer");
-    // Causes the chatsContainer to now be visible
-    chatsContainer!.classList.replace("invisible", "visible");
-    // Runs function that in this case will insert the user's message
-    await insertHTML()
 
-    await insertHTML()
-    
-    // Returns the text from the AI
-    printText = await askQuestion(userText, img[1]) as string;
-    
-    if (printText){
-      document.getElementById("response-" + "5" + messageNumber)!.innerHTML = printText;
-      // Increments the messageNumber to keep HTML id's unique
-      messageNumber = increment(messageNumber, "+");
-      textInputField.value = "";
-    }
+  elementAppended = true
+  let chatsContainer = document.getElementById("chatsContainer");
+  // Causes the chatsContainer to now be visible
+  chatsContainer!.classList.replace("invisible", "visible");
+  // Inserts two seperate lots of HTML, one for the user and one for the AI
+  await insertHTML()
+  await insertHTML()
+  
+  // Returns the text from the AI
+  printText = await getResponse(userText, img[1]) as string;  
+  
+  // Once askQuestion is finished and printText has a truthy value
+  if (printText){
+    // Sets the text where the AI responds to the actual response
+    document.getElementById("response-" + "5" + messageNumber)!.innerHTML = printText;
+    // Increments the messageNumber to keep HTML id's unique
+    messageNumber = increment(messageNumber, "+");
+    // Resets the text input field
+    textInputField.value = "";
   }
+
+  // The app is no longer displaying and thus messages can be sent assuming other criteria are fulfilled
   displaying = false
 }
 
+// Function that will insert each question and response as sections of HTML
 async function insertHTML (){
   let chatsContainer = document.getElementById("chatsContainer")
-  // appends HTML by reparsing it and then adding on another segement
+  // appends HTML to the container
   chatsContainer!.innerHTML +=   
 
   /* The insertHTML function essentially inserts user messages and AI responses in the same function. In order
@@ -532,7 +553,7 @@ async function insertHTML (){
           // Additional data will be attached to the speaker using the "data-" prefix
           '" data-speakerID="' +
           responseChatGPTOrUser + messageNumber +
-          '" class="h-6" src="src/lib/images/speakerLight.png" alt="">' +
+          '" class="h-6 transition-opacity transition-transform duration-300 ease-in-out transform" src="src/lib/images/speakerLight.png" alt="">' +
           '</button>' +
       '</div>' +
   '</div>' +
@@ -542,36 +563,32 @@ async function insertHTML (){
   '" class="ml-[16%] pb-[20px]"></p>'
 
   // Checks to see if the current message displayed should be from the user
-  if (iconChatGPTOrUser == "0" && nameChatGPTOrUser == "2" && responseChatGPTOrUser == "4") {
+  if (iconChatGPTOrUser == "0") {
     // Uses the dynamic id's to insert the user icon, the user name, and the users message into their respective places
     (<HTMLImageElement>document.getElementById("icon-" + iconChatGPTOrUser + messageNumber)).src = "src/lib/images/userIconLight.png";
     document.getElementById("name-" + nameChatGPTOrUser + messageNumber)!.innerHTML="User";
     document.getElementById("response-" + responseChatGPTOrUser + messageNumber)!.innerHTML = userText;
     // Increments these variables up to 1 to ensure the next message displayed is the AI's response
-    iconChatGPTOrUser = increment (iconChatGPTOrUser, "+");
-    nameChatGPTOrUser = increment (nameChatGPTOrUser, "+");
-    responseChatGPTOrUser = increment (responseChatGPTOrUser, "+");
-    speakerChatGPTOrUser = increment (speakerChatGPTOrUser, "+");
+    [iconChatGPTOrUser, nameChatGPTOrUser, responseChatGPTOrUser, speakerChatGPTOrUser] = 
+    [iconChatGPTOrUser, nameChatGPTOrUser, responseChatGPTOrUser, speakerChatGPTOrUser].map(item => increment(item, "+"));
 
   }
 
   // Checks to see if the current message displayed should be from the AI
-  else if (iconChatGPTOrUser == "1" && nameChatGPTOrUser == "3" && responseChatGPTOrUser == "5") {
+  else if (iconChatGPTOrUser == "1") {
     // Uses the dynamic id's to insert the AI's icon, the AI name, and the AI's message into their respective places
     (<HTMLImageElement>document.getElementById("icon-" + iconChatGPTOrUser + messageNumber)).src = "src/lib/images/openaiLight.png";
     document.getElementById("name-" + nameChatGPTOrUser + messageNumber)!.innerHTML="ChatGPT";
+    // Sets the current AI's response to a loading ellipse (...) while the question is being processed
     document.getElementById("response-" + responseChatGPTOrUser + messageNumber)!.innerHTML = "<div class='flex space-x-2'>" +
                                                                                               "<span class='sr-only'>Loading...</span>" +
                                                                                               "<div class='h-4 w-4 bg-black rounded-full animate-bounce [animation-delay:-0.3s]'></div>" +
                                                                                               "<div class='h-4 w-4 bg-black rounded-full animate-bounce [animation-delay:-0.15s]'></div>" +
                                                                                               "<div class='h-4 w-4 bg-black rounded-full animate-bounce'></div>" +
-                                                                                              "</div>"
+                                                                                              "</div>";
     // Increments these variables down to 0 to ensure the next message displayed is the users
-    iconChatGPTOrUser = increment (iconChatGPTOrUser, "-");
-    nameChatGPTOrUser = increment (nameChatGPTOrUser, "-");
-    responseChatGPTOrUser = increment (responseChatGPTOrUser, "-");
-    speakerChatGPTOrUser = increment (speakerChatGPTOrUser, "-");
-
+    [iconChatGPTOrUser, nameChatGPTOrUser, responseChatGPTOrUser, speakerChatGPTOrUser] = 
+    [iconChatGPTOrUser, nameChatGPTOrUser, responseChatGPTOrUser, speakerChatGPTOrUser].map(item => increment(item, "-"));
   }
   // Catches errors if variables fail to increment due to an unknown bug
   else {

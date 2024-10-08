@@ -4,17 +4,22 @@ import path from 'path';
 import OpenAI from 'openai';
 
 // Sets api key
-const openai = new OpenAI({apiKey: ''});
+const openai = new OpenAI({ apiKey: '' });
 
 // Function that handles incoming post requests to this server file
 export async function POST({ request }) {
   try {
     // Obtains audio data from the post request
     const audioBuffer = await request.arrayBuffer();
+
+    // Converts ArrayBuffer to Uint8Array
+    const audioBufferUint8Array = new Uint8Array(audioBuffer);
+
     // Defines the file path to temporarily store the audio data
     const audioFilePath = path.join(process.cwd(), 'temp_audio.mp3');
-    // Converts the audio buffer to a node.js buffer and saves it to the audioFilePath directory
-    await fs.promises.writeFile(audioFilePath, Buffer.from(audioBuffer));
+
+    // Converts the audio buffer to a Node.js Buffer and saves it to the audioFilePath directory
+    await fs.promises.writeFile(audioFilePath, audioBufferUint8Array);
 
     // Utilizes the OpenAI transcription whisper model
     const transcription = await openai.audio.transcriptions.create({
@@ -30,7 +35,7 @@ export async function POST({ request }) {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  
+
   // If anything fails, the error will be caught and a message displayed as to what happened
   } catch (error) {
     console.error('Error transcribing audio:', error);
