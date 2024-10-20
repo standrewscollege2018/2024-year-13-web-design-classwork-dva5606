@@ -1,3 +1,9 @@
+/**
+Takes in the contents of the message from the +page.svelte file and then translates it
+into audio. This is done by Open Ai's tts-1 model which takes in text and will return
+and audio file. This audio file is then returned as base64
+ */
+
 // Imports a few modules
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';

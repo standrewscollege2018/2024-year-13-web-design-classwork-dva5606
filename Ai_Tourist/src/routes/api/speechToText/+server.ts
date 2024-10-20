@@ -1,3 +1,10 @@
+/**
+This server file takes the audio blob and will convert it to text.
+This is done by storing it temporarily as a mp3 file and then sending a request
+to OpenAI using their whisper-1 model to generate the text from the audio.
+This text will then be returned to the main +page.svelte file
+ */
+
 // Imports a few modules for file reading and writing as well as the openai module
 import fs from 'fs';
 import path from 'path';

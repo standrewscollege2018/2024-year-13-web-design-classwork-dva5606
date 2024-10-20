@@ -1,3 +1,10 @@
+/**
+This server file utilizes my partners code to produce a response from ChatGPT.
+The users question and image is parsed into the function and will generate a response
+using the gpt-4-turbo model. This response will then be returned back to the main
++page.svelte file
+*/
+
 import { OpenAI } from 'openai';
 
 const openai = new OpenAI({ apiKey: '' }); // Replace with your API key
