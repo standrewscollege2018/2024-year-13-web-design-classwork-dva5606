@@ -49,7 +49,7 @@ async function genQuestion(question: string) {
   let messText: string;
 
   if (frame !== 1) {
-    messText = '';
+    messText = 'Hello ChatGPT, please try to answer within 2-3 sentences where possible. You have been asked ';
     for (let i = 0; i < questions.length - 1; i++) {
       messText += questions[i] + ', ';
     }

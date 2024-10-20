@@ -15,10 +15,10 @@ export async function POST({ request }) {
     // Converts ArrayBuffer to Uint8Array
     const audioBufferUint8Array = new Uint8Array(audioBuffer);
 
-    // Defines the file path to temporarily store the audio data
+    // Defines the file path to temporarily store the audio data in the current working directory
     const audioFilePath = path.join(process.cwd(), 'temp_audio.mp3');
 
-    // Converts the audio buffer to a Node.js Buffer and saves it to the audioFilePath directory
+    // writes the audio data (Uint8Array) to the file at the specified path
     await fs.promises.writeFile(audioFilePath, audioBufferUint8Array);
 
     // Utilizes the OpenAI transcription whisper model

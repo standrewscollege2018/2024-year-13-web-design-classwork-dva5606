@@ -4,8 +4,8 @@
 <!-- Tailwind CSS is used here and allows me to directly style HTML component through the classes of elements -->
 
 <div id="body">
+  <!-- Container for notifications -->
   <div id="notificationsContainer" class="fixed z-50 left-[5%] top-[3%]">
-
     <!-- Loops through each notification in the notification array -->
     {#each notifications as notification (notification.id)}
       <!-- Actual notification component -->
@@ -19,9 +19,9 @@
         {notification.message}
       </Toast>
     {/each}
-
   </div>
-  <!-- Creates a header for the app that simply displays "Chats" -->
+
+  <!-- Creates a header for the app t hat simply displays "Chats" -->
   <div class="sticky z-20 top-0 border-b border-b-2 border-lightModeGrey-600 bg-lightModeGrey-100 py-4">
     <h1 class="text-2xl text-black font-consolas text-center my-auto">Chats</h1>
   </div>
@@ -142,23 +142,6 @@ async function getResponse(userText:string, base64Image:string) {
     return "An error has occurred!"; // Or handle the error as you see fit
   }
 }
-// Function that is called when a question can be asked
-function sendActive() {
-  let send = document.getElementById("send") as HTMLButtonElement
-  send.classList.remove ("opacity-30")
-  // When the send button is clicked on, display() will be called rather than checkErrors()
-  send!.addEventListener('click', (display))
-  send!.removeEventListener('click', checkErrors)
-}
-
-// Function that is called when a question cannot be asked
-function sendInactive() {
-  let send = document.getElementById("send") as HTMLButtonElement
-  send.classList.add ("opacity-30")
-  // When the send button is clicked on, checkErrors() will be called rather than display()
-  send!.removeEventListener('click', (display))
-  send!.addEventListener('click', checkErrors)
-}
 
 // creates onMount function to excute code after rendering the page
 onMount(() => {
@@ -166,7 +149,7 @@ onMount(() => {
   let imageInput = document.querySelector('input[type="file"]') as HTMLInputElement;
   let send = document.getElementById("send") as HTMLButtonElement
 
-  send.addEventListener('click', checkErrors)
+  send.addEventListener('click', display)
   
 
   // When fileInput changes do the following
@@ -240,12 +223,12 @@ onMount(() => {
   function checkInputs() {
     // If both are present, the send button becomes active
     if (img[1] && textInputField && textInputField.value) {
-      sendActive()
+      send.classList.remove ("opacity-30")
     }
 
     // If neither or one is missing, the send button will remain/become inactive
     else {
-      sendInactive()
+      send.classList.add ("opacity-30")
     }
   }
 
@@ -286,41 +269,22 @@ onMount(() => {
 
     // triggered when the recorder stops (microphone button is clicked again)
     recorder.onstop = async () => {
-      // Combines all the individual chunks from the array into one blob that represents the whole audio file
-      const blob = new Blob(chunks, { type: "audio/mp3" });
+      // Combines all the individual chunks from the array into one blob
+      const audioBlob = new Blob(chunks, { type: "audio/mp3" });
       // Resets the chunks array
       chunks = [];
-
-      // Creates a new instance of FormData
-      const formData = new FormData();
-      // appends the name, value and file of the new FormData instance
-      formData.append('audio', blob, 'recording.mp3');
-
       // Trys to do the following and will catch any errors that occur here
       try {
-        // The blob is then sent to a server files where an mp3 audio file is returned
-        const saveResponse = await fetch('/api/saveAudio', {
-          method: 'POST',
-          body: blob
-        });
-        
-        // Checks if the audio file response was successful or not
-        if (saveResponse.ok) {
-          console.log("Audio saved successfully");
-        } else {
-          console.error("Failed to save audio");
-          return;
-        }
 
-        // The audio file is then sent to a server file to be transcripted
+        // The audio blob is then sent to a server file to be transcripted
         const transcribeResponse = await fetch('/api/speechToText', {
           method: 'POST',
-          body: blob
+          body: audioBlob
         });
 
         // If the response comes back successful...
         if (transcribeResponse.ok) {
-          // Sets the json response
+          // Sets the fetch response to a JavaScript object
           const data = await transcribeResponse.json();
           // Appends the transcription to text input field
           (<HTMLInputElement>document.getElementById("textInputField")!).value += data.transcription
@@ -438,23 +402,6 @@ async function audio(text: String) {
   }
 }
 
-// When a message can't be sent, it may be for a number of reasons
-async function checkErrors() {
-  let textInputField = document.getElementById("textInputField") as HTMLInputElement
-    // If no image is inserted, create a specific error notification
-    if (!img[1]) {
-      await triggerToast("Error occurred! Please insert an image.")
-    }
-    // If no text has been inserted into the field, create a specific error notification
-    if (!textInputField.value) {
-      await triggerToast("Error occurred! Please ask a question.")
-    }
-    // If a question is already being asked/processed, create a specific error notification
-    if (displaying == true) {
-      await triggerToast("Error occured! Please await a reply before asking again.")
-    }
-  }
-
 // Sets up a couple variables in order to dynamically add content
 let iconChatGPTOrUser = "0" as string
 let nameChatGPTOrUser = "2" as string
@@ -475,49 +422,66 @@ type Notification = {
 // Function to trigger a new toast notification
 async function triggerToast(message:string) {
   const id = Date.now(); // Unique ID for each toast
-
   // Add new notification to the array
   notifications = [...notifications, { id, message }];
-  
+  console.log(notifications)
   // Automatically remove the toast after 3 seconds
   setTimeout(() => {
+    // Creates a new array excluding the notification with the same id as the one added
     notifications = notifications.filter((notification) => notification.id !== id);
-  }, 3000); // Toast will disappear after 3 seconds
+  }, 3000);
 }
 
 // The app is not initially displaying anything
 let displaying = false as boolean
 // Creates a display function that will run when the send button is clicked
 async function display(){
-  // Once a question is successfully asked, the send button becomes inactive
-  sendInactive()
-  // Gets the text that was inserted and the HTML chatsContainer and sets them to variables for later use
   let textInputField = (<HTMLInputElement>document.getElementById("textInputField")!)
-  userText = textInputField.value;
-
-  elementAppended = true
-  let chatsContainer = document.getElementById("chatsContainer");
-  // Causes the chatsContainer to now be visible
-  chatsContainer!.classList.replace("invisible", "visible");
-  // Inserts two seperate lots of HTML, one for the user and one for the AI
-  await insertHTML()
-  await insertHTML()
-  
-  // Returns the text from the AI
-  printText = await getResponse(userText, img[1]) as string;  
-  
-  // Once askQuestion is finished and printText has a truthy value
-  if (printText){
-    // Sets the text where the AI responds to the actual response
-    document.getElementById("response-" + "5" + messageNumber)!.innerHTML = printText;
-    // Increments the messageNumber to keep HTML id's unique
-    messageNumber = increment(messageNumber, "+");
+  if (img[1] && textInputField && textInputField.value && displaying == false) {
+    // Once a question is successfully asked, the send button becomes inactive
+    let send = document.getElementById("send") as HTMLButtonElement
+    send.classList.add ("opacity-30")
     // Resets the text input field
+    displaying = true
+    // Gets the text that was inserted and the HTML chatsContainer and sets them to variables for later use
+    userText = textInputField.value;
     textInputField.value = "";
-  }
+    elementAppended = true
+    let chatsContainer = document.getElementById("chatsContainer");
+    // Causes the chatsContainer to now be visible
+    chatsContainer!.classList.replace("invisible", "visible");
+    // Inserts two seperate lots of HTML, one for the user and one for the AI
+    await insertHTML()
+    await insertHTML()
+    
+    // Returns the text from the AI
+    printText = await getResponse(userText, img[1]) as string;  
+    // Once askQuestion is finished and printText has a truthy value
+    if (printText){
+      // Sets the text where the AI responds to the actual response
+      document.getElementById("response-" + "5" + messageNumber)!.innerHTML = printText;
+      // Increments the messageNumber to keep HTML id's unique
+      messageNumber = increment(messageNumber, "+");
+    }
 
-  // The app is no longer displaying and thus messages can be sent assuming other criteria are fulfilled
-  displaying = false
+    // The app is no longer displaying and thus messages can be sent assuming other criteria are fulfilled
+    displaying = false
+  }
+  else {
+    let textInputField = document.getElementById("textInputField") as HTMLInputElement
+    // If no image is inserted, create a specific error notification
+    if (!img[1]) {
+      await triggerToast("Error occurred! Please insert an image.")
+    }
+    // If no text has been inserted into the field, create a specific error notification
+    if (!textInputField.value) {
+      await triggerToast("Error occurred! Please ask a question.")
+    }
+    // If a question is already being asked/processed, create a specific error notification
+    if (displaying == true) {
+      await triggerToast("Error occured! Please await a reply before asking again.")
+    }
+  }
 }
 
 // Function that will insert each question and response as sections of HTML
@@ -599,19 +563,18 @@ async function insertHTML (){
 
 // Simple increment function that take in what's being incremented and whether it is being incremented up or down
 function increment (value:string, upOrDown: string){
-// The initial value is a string so that dynamic id's can be formed and so it must be converted into an integer
-let intValue = parseInt(value, 10);
-// If upOrDown is a "+" the value will increment up by 1 and if upOrDown is a "-" increment the value down by 1
-if (upOrDown == "+") {
-  intValue ++
+  // The initial value is a string so that dynamic id's can be formed and so it must be converted into an integer
+  let intValue = parseInt(value, 10);
+  // If upOrDown is a "+" the value will increment up by 1 and if upOrDown is a "-" increment the value down by 1
+  if (upOrDown == "+") {
+    intValue ++
+  }
+  else {
+    intValue --
+  }
+  // Sets the integer value back to a string and returns it
+  value = intValue.toString();
+  return value
 }
-else {
-  intValue --
-}
-// Sets the integer value back to a string and returns it
-value = intValue.toString();
-return value
-}
-
 
 </script>
