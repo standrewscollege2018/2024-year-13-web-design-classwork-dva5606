@@ -1,0 +1,14 @@
+{
+	"/": [],
+	"/api/chatgptResponse": [
+		"src/routes/api/chatgptResponse/+server.ts"
+	],
+	"/api/speechToText": [
+		"src/routes/api/speechToText/+server.ts"
+	],
+	"/api/textToSpeech": [
+		"src/routes/api/textToSpeech/+server.ts"
+	],
+	"/history": [],
+	"/settings": []
+}
