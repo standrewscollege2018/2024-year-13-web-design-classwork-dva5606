@@ -1,6 +1,6 @@
 {
   ".svelte-kit/generated/client-optimized/app.js": {
-    "file": "_app/immutable/entry/app.by9wUcQn.js",
+    "file": "_app/immutable/entry/app.hTJRv0t6.js",
     "name": "entry/app",
     "src": ".svelte-kit/generated/client-optimized/app.js",
     "isEntry": true,
@@ -31,7 +31,7 @@
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/1.js": {
-    "file": "_app/immutable/nodes/1.51iSNKj-.js",
+    "file": "_app/immutable/nodes/1.Os4ZIy9q.js",
     "name": "nodes/1",
     "src": ".svelte-kit/generated/client-optimized/nodes/1.js",
     "isEntry": true,
@@ -39,11 +39,11 @@
     "imports": [
       "_scheduler.VOLigLrV.js",
       "_index.DjidVCRW.js",
-      "_entry.nw-7vtX2.js"
+      "_entry.DzBZIhe9.js"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/2.js": {
-    "file": "_app/immutable/nodes/2.DILoNHGb.js",
+    "file": "_app/immutable/nodes/2.DQj1a2zf.js",
     "name": "nodes/2",
     "src": ".svelte-kit/generated/client-optimized/nodes/2.js",
     "isEntry": true,
@@ -51,6 +51,12 @@
     "imports": [
       "_scheduler.VOLigLrV.js",
       "_index.DjidVCRW.js"
+    ],
+    "assets": [
+      "_app/immutable/assets/historyLightInactive.ChmnUgQK.png",
+      "_app/immutable/assets/openaiLight.BxXb4NL-.png",
+      "_app/immutable/assets/plusLight.DH7hNV28.png",
+      "_app/immutable/assets/userIconLight.u6QFKnIE.png"
     ]
   },
   ".svelte-kit/generated/client-optimized/nodes/3.js": {
@@ -75,8 +81,8 @@
       "_index.DjidVCRW.js"
     ]
   },
-  "_entry.nw-7vtX2.js": {
-    "file": "_app/immutable/chunks/entry.nw-7vtX2.js",
+  "_entry.DzBZIhe9.js": {
+    "file": "_app/immutable/chunks/entry.DzBZIhe9.js",
     "name": "entry",
     "imports": [
       "_scheduler.VOLigLrV.js"
@@ -94,12 +100,40 @@
     "name": "scheduler"
   },
   "node_modules/@sveltejs/kit/src/runtime/client/entry.js": {
-    "file": "_app/immutable/entry/start.OddEiMu2.js",
+    "file": "_app/immutable/entry/start.CJzdqRP_.js",
     "name": "entry/start",
     "src": "node_modules/@sveltejs/kit/src/runtime/client/entry.js",
     "isEntry": true,
     "imports": [
-      "_entry.nw-7vtX2.js"
+      "_entry.DzBZIhe9.js"
     ]
+  },
+  "src/lib/images/historyDarkInactive.png": {
+    "file": "_app/immutable/assets/historyDarkInactive.CQjdg1mJ.png",
+    "src": "src/lib/images/historyDarkInactive.png"
+  },
+  "src/lib/images/historyLightInactive.png": {
+    "file": "_app/immutable/assets/historyLightInactive.ChmnUgQK.png",
+    "src": "src/lib/images/historyLightInactive.png"
+  },
+  "src/lib/images/openaiDark.png": {
+    "file": "_app/immutable/assets/openaiDark.D_D6oy0I.png",
+    "src": "src/lib/images/openaiDark.png"
+  },
+  "src/lib/images/openaiLight.png": {
+    "file": "_app/immutable/assets/openaiLight.BxXb4NL-.png",
+    "src": "src/lib/images/openaiLight.png"
+  },
+  "src/lib/images/plusLight.png": {
+    "file": "_app/immutable/assets/plusLight.DH7hNV28.png",
+    "src": "src/lib/images/plusLight.png"
+  },
+  "src/lib/images/userIconDark.png": {
+    "file": "_app/immutable/assets/userIconDark.Chzr7WnI.png",
+    "src": "src/lib/images/userIconDark.png"
+  },
+  "src/lib/images/userIconLight.png": {
+    "file": "_app/immutable/assets/userIconLight.u6QFKnIE.png",
+    "src": "src/lib/images/userIconLight.png"
   }
 }

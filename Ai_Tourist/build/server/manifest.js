@@ -7,58 +7,50 @@ function __memo(fn) {
 return {
 	appDir: "_app",
 	appPath: "_app",
-	assets: new Set(["favicon.png"]),
-	mimeTypes: {".png":"image/png"},
+	assets: new Set(["favicon.png","icon.svg","icon128.png","icon256.png","icon64.png","manifest.json","service-worker.js"]),
+	mimeTypes: {".png":"image/png",".svg":"image/svg+xml",".json":"application/json"},
 	_: {
-		client: {"start":"_app/immutable/entry/start.OddEiMu2.js","app":"_app/immutable/entry/app.by9wUcQn.js","imports":["_app/immutable/entry/start.OddEiMu2.js","_app/immutable/chunks/entry.nw-7vtX2.js","_app/immutable/chunks/scheduler.VOLigLrV.js","_app/immutable/entry/app.by9wUcQn.js","_app/immutable/chunks/scheduler.VOLigLrV.js","_app/immutable/chunks/index.DjidVCRW.js"],"stylesheets":[],"fonts":[],"uses_env_dynamic_public":false},
+		client: {"start":"_app/immutable/entry/start.CJzdqRP_.js","app":"_app/immutable/entry/app.hTJRv0t6.js","imports":["_app/immutable/entry/start.CJzdqRP_.js","_app/immutable/chunks/entry.DzBZIhe9.js","_app/immutable/chunks/scheduler.VOLigLrV.js","_app/immutable/entry/app.hTJRv0t6.js","_app/immutable/chunks/scheduler.VOLigLrV.js","_app/immutable/chunks/index.DjidVCRW.js"],"stylesheets":[],"fonts":[],"uses_env_dynamic_public":false},
 		nodes: [
-			__memo(() => import('./chunks/0-DCKv731E.js')),
-			__memo(() => import('./chunks/1-C8I4vzmB.js')),
-			__memo(() => import('./chunks/2-BTj5wwyP.js')),
-			__memo(() => import('./chunks/3-D9vMPzwX.js')),
-			__memo(() => import('./chunks/4-TZ1XlG2G.js'))
+			__memo(() => import('./chunks/0-SqbQVdp9.js')),
+			__memo(() => import('./chunks/1-8Y5tendo.js')),
+			__memo(() => import('./chunks/3-CIgqizDw.js')),
+			__memo(() => import('./chunks/4-C5wizJ4f.js'))
 		],
 		routes: [
-			{
-				id: "/",
-				pattern: /^\/$/,
-				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 2 },
-				endpoint: null
-			},
 			{
 				id: "/api/chatgptResponse",
 				pattern: /^\/api\/chatgptResponse\/?$/,
 				params: [],
 				page: null,
-				endpoint: __memo(() => import('./chunks/_server.ts-BdfVgXSe.js'))
+				endpoint: __memo(() => import('./chunks/_server.ts-Bc8xO6on.js'))
 			},
 			{
 				id: "/api/speechToText",
 				pattern: /^\/api\/speechToText\/?$/,
 				params: [],
 				page: null,
-				endpoint: __memo(() => import('./chunks/_server.ts-D0Z9whCc.js'))
+				endpoint: __memo(() => import('./chunks/_server.ts-COe9nFGb.js'))
 			},
 			{
 				id: "/api/textToSpeech",
 				pattern: /^\/api\/textToSpeech\/?$/,
 				params: [],
 				page: null,
-				endpoint: __memo(() => import('./chunks/_server.ts-EaQTiTXr.js'))
+				endpoint: __memo(() => import('./chunks/_server.ts-CA3WFVjh.js'))
 			},
 			{
 				id: "/history",
 				pattern: /^\/history\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 3 },
+				page: { layouts: [0,], errors: [1,], leaf: 2 },
 				endpoint: null
 			},
 			{
 				id: "/settings",
 				pattern: /^\/settings\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 4 },
+				page: { layouts: [0,], errors: [1,], leaf: 3 },
 				endpoint: null
 			}
 		],
@@ -71,7 +63,7 @@ return {
 }
 })();
 
-const prerendered = new Set([]);
+const prerendered = new Set(["/"]);
 
 const base = "";
 

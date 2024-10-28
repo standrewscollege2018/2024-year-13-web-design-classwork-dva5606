@@ -1,0 +1,26 @@
+{
+  "name": "Ai Tourist",
+  "short_name": "Ai Tourist",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "sizes": "64x64",
+      "src": "icon64.png",
+      "type": "image/png"
+    },
+    {
+      "sizes": "128x128",
+      "src": "icon128.png",
+      "type": "image/png"
+    },      
+    {
+      "sizes": "256x256",
+      "src": "icon256.png",
+      "type": "image/png"
+    }
+  ]
+}

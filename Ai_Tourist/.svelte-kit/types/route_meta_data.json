@@ -1,5 +1,7 @@
 {
-	"/": [],
+	"/": [
+		"src/routes/+page.js"
+	],
 	"/api/chatgptResponse": [
 		"src/routes/api/chatgptResponse/+server.ts"
 	],

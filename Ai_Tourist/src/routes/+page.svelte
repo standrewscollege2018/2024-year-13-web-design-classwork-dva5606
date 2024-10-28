@@ -35,7 +35,7 @@
           <!-- Creates a blank image where the image that is inputted will be displayed -->
           <img class="max-h-[350px] object-cover rounded-xl" id="imageDisplay" src="" alt="">
           <!-- simple plus icon -->
-          <img class="h-[60%] rounded-xl " id="plusIcon" src="src/lib/images/plusLight.png" alt="">
+          <img class="h-[60%] rounded-xl " id="plusIcon" src="{plusLight}" alt="">
         </label>
     </div>
   </div>
@@ -53,7 +53,7 @@
     <div class="flex mx-[20px] border-black border-2 bg-white rounded-xl bottom-[17%] justify-centre">
       <!-- Forms a small button with a microphone as its icon -->
       <button class="w-[10%]">
-        <img id="microphone" class="h-auto p-[5px] transition-opacity transition-transform duration-200 ease-in-out transform" src="src/lib/images/microphoneLight.png" alt="Voice to Text">
+        <img id="microphone" class="h-auto p-[5px] transition-opacity transition-transform duration-200 ease-in-out transform" src="{microphoneLight}" alt="Voice to Text">
       </button>
 
       <!-- small vertical line to act as a divider -->
@@ -64,7 +64,7 @@
       
       <!-- a button that confirms the text within the field and sends it off to the AI -->
       <div id="send" class="transition-[opacity] duration-[500ms] opacity-30 w-[10%]">
-        <img class=" h-auto p-1" src="src/lib/images/sendLight.png" alt="">
+        <img class=" h-auto p-1" src="{sendLight}" alt="">
       </div>
     <!-- Closes the div tag for specifically just the text input field -->
     </div>
@@ -80,7 +80,7 @@
 
       <!-- Creates a unique button for the current home page -->
       <button type="button" class="aspect-square bg-lightModeGrey-800 border border-lightModeGrey-800 rounded-[100%] m-[12%]">
-          <img class="w-[65%] mx-auto" src="src/lib/images/chatsLightActive.png" alt="">
+          <img class="w-[65%] mx-auto" src="{chatsLightActive}" alt="Chats Icon">
       </button>
 
       <!-- Inserts the SettingsLightInactive svelte component -->
@@ -101,6 +101,23 @@ import SettingsLightInactive from "../components/settingsLightInactive.svelte";
 import { Toast } from 'flowbite-svelte';
 import { ExclamationCircleSolid } from 'flowbite-svelte-icons';
 import { fly } from 'svelte/transition';
+
+import chatsDarkActive from '$lib/images/chatsDarkActive.png';
+import chatsLightActive from '$lib/images/chatsLightActive.png';
+import microphoneDark from '$lib/images/microphoneDark.png';
+import microphoneLight from '$lib/images/microphoneLight.png';
+import openaiDark from '$lib/images/openaiDark.png';
+import openaiLight from '$lib/images/openaiLight.png';
+import plusDark from '$lib/images/plusDark.png';
+import plusLight from '$lib/images/plusLight.png';
+import sendDark from '$lib/images/sendDark.png';
+import sendLight from '$lib/images/sendLight.png';
+import speakerDark from '$lib/images/speakerDark.png';
+import speakerLight from '$lib/images/speakerLight.png';
+import stopDark from '$lib/images/stopDark.png';
+import stopLight from '$lib/images/stopLight.png';
+import userIconDark from '$lib/images/userIconDark.png';
+import userIconLight from '$lib/images/userIconLight.png';
 
 
 
@@ -309,7 +326,7 @@ onMount(() => {
         isRecording = true;
         recorder.start();
         // microphone button becomes square stop button
-        micButton!.src = "src/lib/images/stopLight.png"
+        micButton!.src = stopLight
         micButton.classList.replace("p-[5px]", "p-[7px]")
       }
       // if recording, stop recording both mechanically and visually
@@ -318,7 +335,7 @@ onMount(() => {
         isRecording = false;
         recorder.stop()
         // the square button turns back into the originally microphone button
-        micButton!.src = "src/lib/images/microphoneLight.png"
+        micButton!.src = microphoneLight
         micButton.classList.replace("p-[7px]", "p-[5px]")
       }
 
@@ -502,7 +519,7 @@ async function insertHTML (){
           // Generates an icon with a dynamic id of "icon-" followed by iconChatGPTOrUser and messageNumber
           '<img id="icon-' +
           iconChatGPTOrUser + messageNumber +
-          '" src="" alt="">'+
+          '" src="" alt="icon">'+
       '</div>' +
       
       // Creates the div container for the rest of the message
@@ -517,7 +534,7 @@ async function insertHTML (){
           // Additional data will be attached to the speaker using the "data-" prefix
           '" data-speakerID="' +
           responseChatGPTOrUser + messageNumber +
-          '" class="h-6 transition-opacity transition-transform duration-300 ease-in-out transform" src="src/lib/images/speakerLight.png" alt="">' +
+          '" class="h-6 transition-opacity transition-transform duration-300 ease-in-out transform" src="" alt="">' +
           '</button>' +
       '</div>' +
   '</div>' +
@@ -525,11 +542,12 @@ async function insertHTML (){
   '<p id="response-' +
   responseChatGPTOrUser + messageNumber +
   '" class="ml-[16%] pb-[20px]"></p>'
-
+  
+  document.getElementById("speaker-" + speakerChatGPTOrUser + messageNumber).src = speakerLight;
   // Checks to see if the current message displayed should be from the user
   if (iconChatGPTOrUser == "0") {
     // Uses the dynamic id's to insert the user icon, the user name, and the users message into their respective places
-    (<HTMLImageElement>document.getElementById("icon-" + iconChatGPTOrUser + messageNumber)).src = "src/lib/images/userIconLight.png";
+    (<HTMLImageElement>document.getElementById("icon-" + iconChatGPTOrUser + messageNumber)).src = userIconLight;
     document.getElementById("name-" + nameChatGPTOrUser + messageNumber)!.innerHTML="User";
     document.getElementById("response-" + responseChatGPTOrUser + messageNumber)!.innerHTML = userText;
     // Increments these variables up to 1 to ensure the next message displayed is the AI's response
@@ -541,7 +559,7 @@ async function insertHTML (){
   // Checks to see if the current message displayed should be from the AI
   else if (iconChatGPTOrUser == "1") {
     // Uses the dynamic id's to insert the AI's icon, the AI name, and the AI's message into their respective places
-    (<HTMLImageElement>document.getElementById("icon-" + iconChatGPTOrUser + messageNumber)).src = "src/lib/images/openaiLight.png";
+    (<HTMLImageElement>document.getElementById("icon-" + iconChatGPTOrUser + messageNumber)).src = openaiLight
     document.getElementById("name-" + nameChatGPTOrUser + messageNumber)!.innerHTML="ChatGPT";
     // Sets the current AI's response to a loading ellipse (...) while the question is being processed
     document.getElementById("response-" + responseChatGPTOrUser + messageNumber)!.innerHTML = "<div class='flex space-x-2'>" +

@@ -23,6 +23,10 @@
       "_ssr.js"
     ]
   },
+  "_private.js": {
+    "file": "chunks/private.js",
+    "name": "private"
+  },
   "_ssr.js": {
     "file": "chunks/ssr.js",
     "name": "ssr"
@@ -49,6 +53,34 @@
       "_ssr.js"
     ]
   },
+  "src/lib/images/historyDarkInactive.png": {
+    "file": "_app/immutable/assets/historyDarkInactive.CQjdg1mJ.png",
+    "src": "src/lib/images/historyDarkInactive.png"
+  },
+  "src/lib/images/historyLightInactive.png": {
+    "file": "_app/immutable/assets/historyLightInactive.ChmnUgQK.png",
+    "src": "src/lib/images/historyLightInactive.png"
+  },
+  "src/lib/images/openaiDark.png": {
+    "file": "_app/immutable/assets/openaiDark.D_D6oy0I.png",
+    "src": "src/lib/images/openaiDark.png"
+  },
+  "src/lib/images/openaiLight.png": {
+    "file": "_app/immutable/assets/openaiLight.BxXb4NL-.png",
+    "src": "src/lib/images/openaiLight.png"
+  },
+  "src/lib/images/plusLight.png": {
+    "file": "_app/immutable/assets/plusLight.DH7hNV28.png",
+    "src": "src/lib/images/plusLight.png"
+  },
+  "src/lib/images/userIconDark.png": {
+    "file": "_app/immutable/assets/userIconDark.Chzr7WnI.png",
+    "src": "src/lib/images/userIconDark.png"
+  },
+  "src/lib/images/userIconLight.png": {
+    "file": "_app/immutable/assets/userIconLight.u6QFKnIE.png",
+    "src": "src/lib/images/userIconLight.png"
+  },
   "src/routes/+layout.svelte": {
     "file": "entries/pages/_layout.svelte.js",
     "name": "entries/pages/_layout.svelte",
@@ -61,6 +93,12 @@
       "_app/immutable/assets/_layout.CMwIUjm2.css"
     ]
   },
+  "src/routes/+page.js": {
+    "file": "entries/pages/_page.js",
+    "name": "entries/pages/_page",
+    "src": "src/routes/+page.js",
+    "isEntry": true
+  },
   "src/routes/+page.svelte": {
     "file": "entries/pages/_page.svelte.js",
     "name": "entries/pages/_page.svelte",
@@ -68,19 +106,29 @@
     "isEntry": true,
     "imports": [
       "_ssr.js"
+    ],
+    "assets": [
+      "_app/immutable/assets/historyLightInactive.ChmnUgQK.png",
+      "_app/immutable/assets/plusLight.DH7hNV28.png"
     ]
   },
   "src/routes/api/chatgptResponse/+server.ts": {
     "file": "entries/endpoints/api/chatgptResponse/_server.ts.js",
     "name": "entries/endpoints/api/chatgptResponse/_server.ts",
     "src": "src/routes/api/chatgptResponse/+server.ts",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_private.js"
+    ]
   },
   "src/routes/api/speechToText/+server.ts": {
     "file": "entries/endpoints/api/speechToText/_server.ts.js",
     "name": "entries/endpoints/api/speechToText/_server.ts",
     "src": "src/routes/api/speechToText/+server.ts",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_private.js"
+    ]
   },
   "src/routes/api/textToSpeech/+server.ts": {
     "file": "entries/endpoints/api/textToSpeech/_server.ts.js",
@@ -88,7 +136,8 @@
     "src": "src/routes/api/textToSpeech/+server.ts",
     "isEntry": true,
     "imports": [
-      "_index.js"
+      "_index.js",
+      "_private.js"
     ]
   },
   "src/routes/history/+page.svelte": {

@@ -9,9 +9,10 @@ This text will then be returned to the main +page.svelte file
 import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
+import {API_KEY} from '$env/static/private';
 
 // Sets api key
-const openai = new OpenAI({ apiKey: '' });
+const openai = new OpenAI({ apiKey: API_KEY });
 
 // Function that handles incoming post requests to this server file
 export async function POST({ request }) {

@@ -4,10 +4,10 @@ The users question and image is parsed into the function and will generate a res
 using the gpt-4-turbo model. This response will then be returned back to the main
 +page.svelte file
 */
-
 import { OpenAI } from 'openai';
+import {API_KEY} from '$env/static/private';
 
-const openai = new OpenAI({ apiKey: '' }); // Replace with your API key
+const openai = new OpenAI({ apiKey: API_KEY });
 let questions: string[] = [];
 let responses: string[] = [];
 let frame = 0;

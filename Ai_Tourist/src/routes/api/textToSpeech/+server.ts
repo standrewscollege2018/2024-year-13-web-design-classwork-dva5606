@@ -8,9 +8,10 @@ and audio file. This audio file is then returned as base64
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import OpenAI from 'openai';
+import {API_KEY} from '$env/static/private';
 
 // Sets api key
-const openai = new OpenAI({apiKey: ''});
+const openai = new OpenAI({apiKey: API_KEY});
 
 // Handles the incoming POST requests
 export const POST: RequestHandler = async ({ request }) => {

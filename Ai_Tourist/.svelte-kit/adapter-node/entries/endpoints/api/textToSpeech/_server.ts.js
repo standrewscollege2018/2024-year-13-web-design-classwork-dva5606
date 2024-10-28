@@ -1,6 +1,7 @@
 import { e as error, j as json } from "../../../../chunks/index.js";
 import OpenAI from "openai";
-const openai = new OpenAI({ apiKey: "" });
+import { A as API_KEY } from "../../../../chunks/private.js";
+const openai = new OpenAI({ apiKey: API_KEY });
 const POST = async ({ request }) => {
   const { text } = await request.json();
   if (!text) {
